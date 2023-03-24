@@ -1,59 +1,52 @@
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "monty.h"
 
-
-void execute(char *line);
+glob_t glob;
 
 /**
- * main - Entry point
- * @argc: no of args
- * @argv: argument variables
- *
- * Return: 0
- */
-
-int main(int argc, char *argv[])
+ * stack_init - initialize all the things
+ * @head: top of stack data structure
+ **/
+void stack_init(stack_t **head)
 {
-	FILE *fp;
-	char *line;
-	size_t len;
-	ssize_t read;
-
-	if (argc == 2)
-	{
-		fp = fopen(argv[1], "r");
-		if (fp == NULL)
-		{
-			exit(EXIT_FAILURE);
-		}
-		while ((read = getline(&line, &len, fp)) != -1)
-		{
-			execute(line);
-		}
-		fclose(fp);
-		if (line)
-		{
-			free(line);
-		}
-	}
-
-	return (0);
+	*head = NULL;
+	glob.top = head;
 }
 
 /**
- * execute - run a monty command
- * @line: command line
- *
- * Return: void
- */
-
-void execute(char *line)
+ * free_all - free all malloc'ed memory
+ *     note: this is available "atexit", starting at
+ *           getline loop
+ **/
+void free_all(void)
 {
-	char *cmd;
+	stack_t *tmp1, *tmp2 = NULL;
 
-	cmd = strtok(line, " ");
+	tmp1 = *(glob.top);
+	/* printf("glob.top->%p\n",  (void*)glob.top); */
+	while (tmp1 != NULL)
+	{
+		tmp2 = tmp1->next;
+		free(tmp1);
+		tmp1 = tmp2;
+	}
+}
 
-	printf("%s\n", cmd);
+/**
+ * main - monty bytecode interpreter
+ * @argc: number of command line arguments
+ * @argv: array of strings containing the comm line args
+ * Return: EXIT_SUCCESS or EXIT_FAILURE!!!
+ **/
+int main(int argc, char **argv)
+{
+	stack_t *head;
+
+	stack_init(&head);
+	if (argc != 2)
+	{
+		printf("USAGE: monty file\n");
+		exit(EXIT_FAILURE);
+	}
+	process_file(argv[1], &head);
+	exit(EXIT_SUCCESS);
 }
