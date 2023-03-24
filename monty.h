@@ -2,8 +2,12 @@
 
 
 /* prototypes */
-
+/* monty.c */
 void execute(char *line);
+
+/* operations.c */
+void set_ops(void);
+void monty(stack_t stack, instruction_t ops, char *opcode, int line_number);
 
 /* structs */
 /**
